@@ -1,31 +1,20 @@
-import React from "react";
-import Avatar from "@material-ui/core/Avatar";
-import Button from "@material-ui/core/Button";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Link from "@material-ui/core/Link";
-import Grid from "@material-ui/core/Grid";
-import Box from "@material-ui/core/Box";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import Container from "@material-ui/core/Container";
-
-function Copyright() {
-	return (
-		<Typography variant='body2' color='textSecondary' align='center'>
-			{"Copyright © "}
-			<Link color='inherit' href='https://material-ui.com/'>
-				Your Website
-			</Link>{" "}
-			{new Date().getFullYear()}
-			{"."}
-		</Typography>
-	);
-}
-
+import React, { useState } from "react";
+import {
+	Button,
+	CssBaseline,
+	TextField,
+	Link,
+	Grid,
+	Typography,
+	makeStyles,
+	Container,
+	Backdrop,
+	CircularProgress,
+	Snackbar,
+} from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
+import { useLoginForm } from "../utils/useForm";
+import Axios from "axios";
 const useStyles = makeStyles((theme) => ({
 	paper: {
 		marginTop: theme.spacing(8),
@@ -44,32 +33,80 @@ const useStyles = makeStyles((theme) => ({
 	submit: {
 		margin: theme.spacing(3, 0, 2),
 	},
+	backdrop: {
+		zIndex: theme.zIndex.drawer + 1,
+		color: "#fff",
+	},
 }));
 
 export default function SignIn() {
 	const classes = useStyles();
+	const [error, setError] = useState({});
+	const [isLoading, setIsLoading] = useState(false);
+	const submit = (setToken) => {
+		if (!values.identifier) {
+			setError({ ...error, identifier: true });
+			return;
+		}
+		if (!values.password) {
+			setError({ ...error, password: true });
+			return;
+		}
+		setError({});
+		setIsLoading(true);
+		const auth = async () => {
+			Axios({
+				method: "POST",
+				url: "auth/local",
+				data: values,
+				validateStatus: (status) => {
+					return true;
+				},
+			})
+				.then((res) => {
+					if (res.status === 400) {
+						setError({ ...error, both: true });
+						setIsLoading(false);
+						return;
+					}
+					setToken(res.data.jwt);
+				})
+				.catch((err) => {
+					console.log(err);
+				});
+		};
+		auth();
+	};
+	const state = { identifier: "", password: "" };
+	const [values, handleChange, handleSubmit] = useLoginForm(state, submit);
 
 	return (
 		<Container component='main' maxWidth='xs'>
+			<Backdrop className={classes.backdrop} open={isLoading}>
+				<CircularProgress color='inherit' />
+			</Backdrop>
 			<CssBaseline />
 			<div className={classes.paper}>
-				<Avatar className={classes.avatar}>
-					<LockOutlinedIcon />
-				</Avatar>
 				<Typography component='h1' variant='h5'>
-					Sign in
+					inventoryPlus
 				</Typography>
-				<form className={classes.form} noValidate>
+				<form className={classes.form} noValidate onSubmit={handleSubmit}>
 					<TextField
 						variant='outlined'
 						margin='normal'
 						required
 						fullWidth
-						id='email'
-						label='Email Address'
-						name='email'
-						autoComplete='email'
+						label='Email Address/Username'
+						name='identifier'
 						autoFocus
+						error={error.identifier}
+						helperText={
+							error.identifier
+								? "We couldn't find an account with that username."
+								: null
+						}
+						values={values.identifier}
+						onChange={handleChange}
 					/>
 					<TextField
 						variant='outlined'
@@ -79,38 +116,39 @@ export default function SignIn() {
 						name='password'
 						label='Password'
 						type='password'
-						id='password'
 						autoComplete='current-password'
+						error={error.password}
+						helperText={error.password ? "Hey your password is wrong." : null}
+						values={values.password}
+						onChange={handleChange}
 					/>
-					<FormControlLabel
-						control={<Checkbox value='remember' color='primary' />}
-						label='Remember me'
-					/>
+					<Snackbar
+						anchorOrigin={{ vertical: "top", horizontal: "center" }}
+						open={error.both}
+						autoHideDuration={6000}>
+						<Alert variant='filled' severity='error'>
+							Your username and/or password might be incorrect.
+						</Alert>
+					</Snackbar>
 					<Button
 						type='submit'
 						fullWidth
 						variant='contained'
 						color='primary'
+						onClick={handleSubmit}
 						className={classes.submit}>
 						Sign In
 					</Button>
+
 					<Grid container>
 						<Grid item xs>
-							<Link href='#' variant='body2'>
+							<Link href='/forgot' variant='body2'>
 								Forgot password?
-							</Link>
-						</Grid>
-						<Grid item>
-							<Link href='#' variant='body2'>
-								{"Don't have an account? Sign Up"}
 							</Link>
 						</Grid>
 					</Grid>
 				</form>
 			</div>
-			<Box mt={8}>
-				<Copyright />
-			</Box>
 		</Container>
 	);
 }
