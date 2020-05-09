@@ -5,9 +5,8 @@ import {
 	CardContent,
 	Typography,
 	CardActions,
-	Collapse,
-	Divider,
 } from "@material-ui/core";
+import UpdateProduct from "./UpdateProduct";
 
 const useStyles = makeStyles((theme) => ({
 	item: {
@@ -16,11 +15,14 @@ const useStyles = makeStyles((theme) => ({
 		background: theme.palette.background.default,
 	},
 }));
-function ProductItem({ item }) {
+function ProductItem({ item, updater }) {
 	const classes = useStyles();
 	const [expand, setExpand] = useState(false);
-	const handleExpandClick = () => {
-		setExpand(!expand);
+	const handleExpandClick = (e) => {
+		setExpand(true);
+	};
+	const handleClose = () => {
+		setExpand(false);
 	};
 	return (
 		<div>
@@ -34,24 +36,13 @@ function ProductItem({ item }) {
 					<div style={{ flex: 1 }}></div>
 					<Typography>Remaining Stocks: {item.stock}</Typography>
 				</CardActions>
-				<Collapse in={expand} timeout='auto' unmountOnExit>
-					<CardContent>
-						<div style={{ display: "flex" }}>
-							<Typography style={{ flex: 1 }}>Original Price:</Typography>
-							<Typography> Php {item.original_price}.00</Typography>
-						</div>
-						<div style={{ display: "flex" }}>
-							<Typography style={{ flex: 1 }}>Mark Up:</Typography>
-							<Typography> Php {item.markup}.00</Typography>
-						</div>
-						<Divider />
-						<div style={{ display: "flex" }}>
-							<Typography style={{ flex: 1 }}>Selling Price:</Typography>
-							<Typography> Php {item.final_price}.00</Typography>
-						</div>
-					</CardContent>
-				</Collapse>
 			</CardActionArea>
+			<UpdateProduct
+				item={item}
+				state={expand}
+				toggleState={handleClose}
+				updater={updater}
+			/>
 		</div>
 	);
 }

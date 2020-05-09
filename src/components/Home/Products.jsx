@@ -34,9 +34,12 @@ const useStyles = makeStyles((theme) => ({
 function Products() {
 	const classes = useStyles();
 	const [newProduct, setNewProduct] = useState(false);
-	const toggleNewProduct = (e) => {
-		e.preventDefault();
+	const toggleNewProduct = () => {
 		setNewProduct(!newProduct);
+	};
+	const [update, setUpdater] = useState(false);
+	const handleUpdate = () => {
+		setUpdater(!update);
 	};
 	return (
 		<Slide in={true}>
@@ -55,9 +58,13 @@ function Products() {
 							New Product
 						</Button>
 					</Toolbar>
-					<ProductItems />
+					<ProductItems update={update} updater={handleUpdate} />
 				</Paper>
-				<NewProduct state={newProduct} handleClose={toggleNewProduct} />
+				<NewProduct
+					state={newProduct}
+					handleClose={toggleNewProduct}
+					updater={handleUpdate}
+				/>
 			</div>
 		</Slide>
 	);

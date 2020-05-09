@@ -1,39 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { makeStyles, Grid, CircularProgress } from "@material-ui/core";
-import ProductItem from "./ProductItem";
+import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
 import Axios from "axios";
+import Customer from "./Customer";
 const useStyles = makeStyles((theme) => ({
 	item: {
+		textAlign: "center",
 		borderRadius: 10,
 		padding: theme.spacing(2),
 		background: theme.palette.background.default,
-	},
-	expand: {
-		transform: "rotate(0deg)",
-		marginLeft: "auto",
-		transition: theme.transitions.create("transform", {
-			duration: theme.transitions.duration.shortest,
-		}),
-	},
-	expandOpen: {
-		transform: "rotate(180deg)",
 	},
 	progress: {
 		marginLeft: theme.spacing(4),
 		color: theme.palette.text.primary,
 	},
 }));
-const ProductItems = ({ update, updater }) => {
+function CustomerList({ update, updater }) {
 	const classes = useStyles();
-	const [products, setProducts] = useState();
+	const [customers, setCustomers] = useState();
 	useEffect(() => {
 		const jwt = localStorage.getItem("jwt");
-		const getProducts = async () => {
+		const getCustomers = async () => {
 			await Axios({
 				method: "GET",
-				url: "products",
+				url: "customers",
 				headers: {
-					"Content-Type": "application/json",
 					Authorization: `Bearer ${jwt}`,
 				},
 				validateStatus: (status) => {
@@ -46,21 +36,21 @@ const ProductItems = ({ update, updater }) => {
 						window.location.reload();
 						return;
 					}
-					setProducts(res.data);
+					setCustomers(res.data);
 				})
 				.catch((err) => {
 					console.log(err);
 				});
 		};
-		getProducts();
+		getCustomers();
 	}, [update]);
 	return (
 		<div>
 			<Grid container alignItems='center' spacing={2}>
-				{products ? (
-					products.map((item) => (
-						<Grid item xs={12} sm={6} md={4} key={item._id}>
-							<ProductItem item={item} updater={updater} />
+				{customers ? (
+					customers.map((customer) => (
+						<Grid item xs={12} sm={4} md={2} key={customer.id}>
+							<Customer customer={customer} updater={updater} />
 						</Grid>
 					))
 				) : (
@@ -69,6 +59,6 @@ const ProductItems = ({ update, updater }) => {
 			</Grid>
 		</div>
 	);
-};
+}
 
-export default React.memo(ProductItems);
+export default CustomerList;

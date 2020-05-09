@@ -1,19 +1,19 @@
 import React, { useState } from "react";
+import { Close } from "@material-ui/icons";
 import {
-	Drawer,
 	makeStyles,
-	Typography,
+	Backdrop,
+	CircularProgress,
+	Drawer,
 	AppBar,
 	Toolbar,
+	Typography,
 	IconButton,
-	Button,
 	Divider,
 	Grid,
 	TextField,
-	Backdrop,
-	CircularProgress,
+	Button,
 } from "@material-ui/core";
-import { Close } from "@material-ui/icons";
 import Axios from "axios";
 const useStyles = makeStyles((theme) => ({
 	root: {
@@ -39,16 +39,12 @@ const useStyles = makeStyles((theme) => ({
 		color: "#fff",
 	},
 }));
-function NewProduct({ state, handleClose, updater }) {
+function NewCustomer({ state, handleClose, updater }) {
 	const classes = useStyles();
 	const [backdrop, setBackdrop] = useState(false);
 	const initialValues = {
-		product_name: "",
-		stock: "",
-		product_description: "",
-		original_price: "",
-		markup: "",
-		final_price: "",
+		name: "",
+		address: "",
 	};
 	const errorInitial = {};
 	const [values, setValues] = useState(initialValues);
@@ -60,20 +56,16 @@ function NewProduct({ state, handleClose, updater }) {
 		e.preventDefault();
 		setBackdrop(true);
 		setError(errorInitial);
-		const product_name = !values.product_name ? true : false;
-		const stock = !values.stock ? true : false;
-		const original_price = !values.original_price ? true : false;
-		const markup = !values.markup ? true : false;
-		setError({ ...error, product_name, stock, original_price, markup });
-		const hasError =
-			product_name || stock || original_price || markup ? true : false;
+		const name = !values.name ? true : false;
+		const address = !values.address ? true : false;
+		setError({ ...error, name, address });
+		const hasError = name || address ? true : false;
 		if (!hasError) {
-			// insert logic
 			const jwt = localStorage.getItem("jwt");
-			const addProduct = async () => {
+			const addCustomer = async () => {
 				await Axios({
 					method: "POST",
-					url: "products",
+					url: "customers",
 					data: values,
 					headers: {
 						Authorization: `Bearer ${jwt}`,
@@ -97,15 +89,8 @@ function NewProduct({ state, handleClose, updater }) {
 						setBackdrop(false);
 					});
 			};
-			addProduct();
+			addCustomer();
 			handleClose();
-		}
-	};
-	const computeFinalPrice = () => {
-		if (values.original_price && values.markup) {
-			const final_price =
-				parseInt(values.original_price) + parseInt(values.markup);
-			setValues({ ...values, final_price });
 		}
 	};
 	return (
@@ -123,7 +108,7 @@ function NewProduct({ state, handleClose, updater }) {
 					style={{ background: "transparent", boxShadow: "none" }}>
 					<Toolbar variant='dense'>
 						<Typography className={classes.modalTitle}>
-							Create a new product
+							Create new customer
 						</Typography>
 						<IconButton onClick={handleClose}>
 							<Close />
@@ -134,84 +119,31 @@ function NewProduct({ state, handleClose, updater }) {
 				<div className={classes.modal}>
 					<form noValidate onSubmit={handleSubmit}>
 						<Grid container alignItems='center' spacing={2}>
-							<Grid item xs={12} sm={6}>
+							<Grid item xs={12}>
 								<TextField
 									fullWidth
 									autoFocus
-									name='product_name'
+									name='name'
 									label='Name'
 									variant='outlined'
-									value={values.product_name}
+									value={values.name}
 									onChange={handleChange}
-									error={error.product_name}
-									helperText={error.product_name ? "This is required" : null}
-								/>
-							</Grid>
-							<Grid item xs={12} sm={6}>
-								<TextField
-									fullWidth
-									name='stock'
-									label='Remaining Stock'
-									variant='outlined'
-									type='number'
-									value={values.stock}
-									onChange={handleChange}
-									error={error.stock}
-									helperText={error.stock ? "This is required" : null}
+									error={error.name}
+									helperText={error.name ? "Name is required" : null}
 								/>
 							</Grid>
 							<Grid item xs={12}>
 								<TextField
 									fullWidth
-									name='product_description'
-									label='Description'
+									name='address'
+									label='Address'
 									variant='outlined'
-									value={values.product_description}
-									onChange={handleChange}
-									rows={4}
 									multiline
-								/>
-							</Grid>
-							<Grid item xs={12}>
-								<TextField
-									fullWidth
-									name='original_price'
-									label='Original Price'
-									variant='outlined'
-									type='number'
-									style={{ textAlign: "right" }}
-									value={values.original_price}
+									rows='4'
+									value={values.address}
 									onChange={handleChange}
-									error={error.original_price}
-									helperText={error.original_price ? "This is required" : null}
-								/>
-							</Grid>
-							<Grid item xs={12}>
-								<TextField
-									fullWidth
-									name='markup'
-									label='Mark Up'
-									variant='outlined'
-									type='number'
-									value={values.markup}
-									onChange={handleChange}
-									onBlur={computeFinalPrice}
-									error={error.markup}
-									helperText={error.markup ? "This is required" : null}
-								/>
-							</Grid>
-							<Grid item xs={12}>
-								<TextField
-									fullWidth
-									name='final_price'
-									label='Final Price'
-									variant='outlined'
-									type='number'
-									// onFocus={computeFinalPrice}
-									value={values.final_price}
-									InputProps={{
-										readOnly: true,
-									}}
+									error={error.address}
+									helperText={error.address ? "Name is required" : null}
 								/>
 							</Grid>
 							<Grid item xs={12}>
@@ -232,4 +164,4 @@ function NewProduct({ state, handleClose, updater }) {
 	);
 }
 
-export default NewProduct;
+export default NewCustomer;
