@@ -37,6 +37,9 @@ const useStyles = makeStyles((theme) => ({
 		zIndex: theme.zIndex.drawer + 1,
 		color: "#fff",
 	},
+	btn: {
+		borderRadius: 100,
+	},
 }));
 function UpdateProduct({ item, state, toggleState, updater }) {
 	const classes = useStyles();
@@ -182,6 +185,7 @@ function UpdateProduct({ item, state, toggleState, updater }) {
 							</Grid>
 							<Grid item xs={12}>
 								<Button
+									className={classes.btn}
 									onClick={handleSubmit}
 									fullWidth
 									variant='contained'
@@ -190,7 +194,11 @@ function UpdateProduct({ item, state, toggleState, updater }) {
 								</Button>
 							</Grid>
 							<Grid item xs={12}>
-								<Button fullWidth variant='contained' onClick={toggleState}>
+								<Button
+									className={classes.btn}
+									fullWidth
+									variant='contained'
+									onClick={toggleState}>
 									Cancel
 								</Button>
 							</Grid>

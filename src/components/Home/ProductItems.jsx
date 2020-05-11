@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { makeStyles, Grid, CircularProgress } from "@material-ui/core";
 import ProductItem from "./ProductItem";
-import Axios from "axios";
 const useStyles = makeStyles((theme) => ({
 	item: {
 		borderRadius: 10,
@@ -23,37 +22,8 @@ const useStyles = makeStyles((theme) => ({
 		color: theme.palette.text.primary,
 	},
 }));
-const ProductItems = ({ update, updater }) => {
+const ProductItems = ({ products, updater }) => {
 	const classes = useStyles();
-	const [products, setProducts] = useState();
-	useEffect(() => {
-		const jwt = localStorage.getItem("jwt");
-		const getProducts = async () => {
-			await Axios({
-				method: "GET",
-				url: "products",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			})
-				.then((res) => {
-					if (res.status === 403) {
-						localStorage.clear();
-						window.location.reload();
-						return;
-					}
-					setProducts(res.data);
-				})
-				.catch((err) => {
-					console.log(err);
-				});
-		};
-		getProducts();
-	}, [update]);
 	return (
 		<div>
 			<Grid container alignItems='center' spacing={2}>

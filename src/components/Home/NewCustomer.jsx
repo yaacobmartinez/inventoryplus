@@ -38,6 +38,9 @@ const useStyles = makeStyles((theme) => ({
 		zIndex: theme.zIndex.drawer + 1,
 		color: "#fff",
 	},
+	btn: {
+		borderRadius: 100,
+	},
 }));
 function NewCustomer({ state, handleClose, updater }) {
 	const classes = useStyles();
@@ -148,12 +151,23 @@ function NewCustomer({ state, handleClose, updater }) {
 							</Grid>
 							<Grid item xs={12}>
 								<Button
+									className={classes.btn}
 									onClick={handleSubmit}
 									variant='contained'
 									fullWidth
 									size='large'
 									color='primary'>
 									Submit
+								</Button>
+							</Grid>
+							<Grid item xs={12}>
+								<Button
+									className={classes.btn}
+									onClick={handleClose}
+									variant='contained'
+									fullWidth
+									size='large'>
+									Cancel
 								</Button>
 							</Grid>
 						</Grid>

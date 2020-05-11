@@ -31,15 +31,11 @@ const useStyles = makeStyles((theme) => ({
 		background: theme.palette.background.default,
 	},
 }));
-function Products() {
+function Products({ products, updater }) {
 	const classes = useStyles();
 	const [newProduct, setNewProduct] = useState(false);
 	const toggleNewProduct = () => {
 		setNewProduct(!newProduct);
-	};
-	const [update, setUpdater] = useState(false);
-	const handleUpdate = () => {
-		setUpdater(!update);
 	};
 	return (
 		<Slide in={true}>
@@ -58,16 +54,16 @@ function Products() {
 							New Product
 						</Button>
 					</Toolbar>
-					<ProductItems update={update} updater={handleUpdate} />
+					<ProductItems products={products} updater={updater} />
 				</Paper>
 				<NewProduct
 					state={newProduct}
 					handleClose={toggleNewProduct}
-					updater={handleUpdate}
+					updater={updater}
 				/>
 			</div>
 		</Slide>
 	);
 }
 
-export default Products;
+export default React.memo(Products);

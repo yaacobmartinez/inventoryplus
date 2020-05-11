@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
-import Axios from "axios";
 import Customer from "./Customer";
 const useStyles = makeStyles((theme) => ({
 	item: {
@@ -14,36 +13,8 @@ const useStyles = makeStyles((theme) => ({
 		color: theme.palette.text.primary,
 	},
 }));
-function CustomerList({ update, updater }) {
+function CustomerList({ customers, updater }) {
 	const classes = useStyles();
-	const [customers, setCustomers] = useState();
-	useEffect(() => {
-		const jwt = localStorage.getItem("jwt");
-		const getCustomers = async () => {
-			await Axios({
-				method: "GET",
-				url: "customers",
-				headers: {
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			})
-				.then((res) => {
-					if (res.status === 403) {
-						localStorage.clear();
-						window.location.reload();
-						return;
-					}
-					setCustomers(res.data);
-				})
-				.catch((err) => {
-					console.log(err);
-				});
-		};
-		getCustomers();
-	}, [update]);
 	return (
 		<div>
 			<Grid container alignItems='center' spacing={2}>

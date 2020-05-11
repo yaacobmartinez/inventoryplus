@@ -8,10 +8,12 @@ import {
 	Tooltip,
 } from "@material-ui/core";
 import {
+	HomeTwoTone,
 	BookTwoTone,
 	AllInboxTwoTone,
 	AccountCircleTwoTone,
 } from "@material-ui/icons";
+import Landing from "./Landing";
 import AllOrders from "./AllOrders";
 import Products from "./Products";
 import Customers from "./Customers";
@@ -30,20 +32,49 @@ const useStyles = makeStyles((theme) => ({
 		margin: theme.spacing(2, 0),
 	},
 }));
-function CustomDrawer({ handleChange }) {
+function CustomDrawer({ handleChange, products, customers, orders, updater }) {
 	const classes = useStyles();
-	const menuItems = [
-		{ name: "Orders", icon: <AllInboxTwoTone />, component: <AllOrders /> },
-		{ name: "Products", icon: <BookTwoTone />, component: <Products /> },
+	let menuItems = [
+		{
+			name: "Home",
+			icon: <HomeTwoTone />,
+			component: <Landing />,
+		},
+		{
+			name: "Orders",
+			icon: <AllInboxTwoTone />,
+			component: (
+				<AllOrders
+					products={products}
+					customers={customers}
+					orders={orders}
+					updater={updater}
+				/>
+			),
+		},
+		{
+			name: "Products",
+			icon: <BookTwoTone />,
+			component: (
+				<Products products={products} customers={customers} updater={updater} />
+			),
+		},
 		{
 			name: "Customers",
 			icon: <AccountCircleTwoTone />,
-			component: <Customers />,
+			component: (
+				<Customers
+					products={products}
+					customers={customers}
+					updater={updater}
+				/>
+			),
 		},
 	];
 	const handleClick = (component) => (e) => {
 		handleChange(component);
 	};
+
 	return (
 		<div>
 			<Drawer variant='permanent' elevation={0} className={classes.drawer}>
@@ -64,4 +95,4 @@ function CustomDrawer({ handleChange }) {
 	);
 }
 
-export default React.memo(CustomDrawer);
+export default CustomDrawer;
