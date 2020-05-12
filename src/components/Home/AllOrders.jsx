@@ -1,22 +1,13 @@
 import React, { useState } from "react";
-import {
-	Tabs,
-	Tab,
-	makeStyles,
-	Paper,
-	Toolbar,
-	Button,
-	Slide,
-} from "@material-ui/core";
+import { Tabs, Tab, makeStyles, Slide } from "@material-ui/core";
 import {
 	ListTwoTone,
 	PostAddTwoTone,
 	LibraryAddCheckTwoTone,
 	LocalShippingTwoTone,
 	DoneAllTwoTone,
-	Add,
 } from "@material-ui/icons";
-import OrdersTable from "./OrdersTable";
+import OrderTabPanel from "./OrderTabPanel";
 import NewOrder from "./NewOrder";
 
 const useStyles = makeStyles((theme) => ({
@@ -38,17 +29,6 @@ const useStyles = makeStyles((theme) => ({
 		verticalAlign: "middle",
 		marginRight: theme.spacing(2),
 	},
-	underBar: {
-		margin: theme.spacing(0, 2, 0, 8),
-		padding: theme.spacing(1),
-		borderTopLeftRadius: 0,
-	},
-	addBtn: {
-		borderRadius: 20,
-		textTransform: "none",
-	},
-	tableHeader: { background: theme.palette.background.default },
-	tableHeaderCell: { fontWeight: 600 },
 }));
 function AllOrders({ customers, products, orders, updater }) {
 	const classes = useStyles();
@@ -60,6 +40,25 @@ function AllOrders({ customers, products, orders, updater }) {
 	const toggleNewOrder = () => {
 		setNewOrder(!newOrder);
 	};
+
+	const confirmed = orders.filter((order) => {
+		return order.items[0].status === "Confirmed";
+	});
+	const reserved = orders.filter((order) => {
+		return order.items[0].status === "Reserved";
+	});
+	const shipping = orders.filter((order) => {
+		return order.items[0].status === "ToShip";
+	});
+	const fulfilled = orders.filter((order) => {
+		return order.items[0].status === "Fulfilled";
+	});
+
+	const tabPanelProps = {
+		toggleNewOrder: toggleNewOrder,
+		updater: updater,
+	};
+
 	return (
 		<Slide in={true}>
 			<div>
@@ -114,21 +113,21 @@ function AllOrders({ customers, products, orders, updater }) {
 						}
 					/>
 				</Tabs>
-				<Paper elevation={0} className={classes.underBar}>
-					<Toolbar>
-						<div style={{ flex: 1 }}></div>
-						<Button
-							onClick={toggleNewOrder}
-							edge='end'
-							variant='contained'
-							color='primary'
-							startIcon={<Add />}
-							className={classes.addBtn}>
-							New Sales Order
-						</Button>
-					</Toolbar>
-					<OrdersTable updater={updater} orders={orders} />
-				</Paper>
+				<TabPanel value={value} index={0}>
+					<OrderTabPanel orders={orders} {...tabPanelProps} />
+				</TabPanel>
+				<TabPanel value={value} index={1}>
+					<OrderTabPanel orders={reserved} {...tabPanelProps} />
+				</TabPanel>
+				<TabPanel value={value} index={2}>
+					<OrderTabPanel orders={confirmed} {...tabPanelProps} />
+				</TabPanel>
+				<TabPanel value={value} index={3}>
+					<OrderTabPanel orders={shipping} {...tabPanelProps} />
+				</TabPanel>
+				<TabPanel value={value} index={4}>
+					<OrderTabPanel orders={fulfilled} {...tabPanelProps} />
+				</TabPanel>
 				{customers && products ? (
 					<NewOrder
 						state={newOrder}
@@ -140,6 +139,16 @@ function AllOrders({ customers, products, orders, updater }) {
 				) : null}
 			</div>
 		</Slide>
+	);
+}
+
+function TabPanel(props) {
+	const { children, value, index, ...other } = props;
+
+	return (
+		<div role='tabpanel' hidden={value !== index} {...other}>
+			{value === index && children}
+		</div>
 	);
 }
 

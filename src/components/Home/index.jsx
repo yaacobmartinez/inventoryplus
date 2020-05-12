@@ -63,7 +63,7 @@ function Home() {
 		const getOrders = async () => {
 			await Axios({
 				method: "GET",
-				url: "orders",
+				url: "orders?_sort=createdAt:DESC",
 				headers: {
 					Authorization: `Bearer ${jwt}`,
 				},
