@@ -5,7 +5,7 @@ export const useLoginForm = (initialState, callback) => {
 	let { push } = useHistory();
 	const [token, setToken] = useContext(AuthContext);
 	if (token) {
-		push("/app");
+		push("/");
 	}
 	const [values, setValues] = useState(initialState);
 	return [
