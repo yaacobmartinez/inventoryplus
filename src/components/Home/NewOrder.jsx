@@ -77,7 +77,6 @@ function NewOrder({ state, handleClose, updater, customers, products }) {
 		setError({ ...error, customer, product, quantity, status, insufficient });
 		const hasError =
 			customer || product || quantity || status || insufficient ? true : false;
-
 		if (!hasError) {
 			setBackdrop(true);
 			const jwt = localStorage.getItem("jwt");
@@ -111,6 +110,8 @@ function NewOrder({ state, handleClose, updater, customers, products }) {
 					},
 				}).then((res) => {
 					updateStocks();
+					setCustomer({});
+					setItem({});
 				});
 			};
 
@@ -148,6 +149,7 @@ function NewOrder({ state, handleClose, updater, customers, products }) {
 			})
 				.then((res) => {
 					setCustomer(res.data);
+					setOrder({ ...order, customer: res.data });
 				})
 				.catch((err) => {
 					console.log(err);

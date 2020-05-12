@@ -85,6 +85,7 @@ function Order({ order, updater }) {
 	const disabler = () => {
 		setDisabled(true);
 	};
+
 	return (
 		<div>
 			<ExpansionPanel hidden={disable} elevation={0} className={classes.panel}>
