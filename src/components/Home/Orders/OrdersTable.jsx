@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Order from "./Order";
-function OrdersTable({ updater, orders }) {
+function OrdersTable({ orders }) {
 	const [allOrders, setAllOrders] = useState(orders);
 	useEffect(() => {
 		setAllOrders(orders);
@@ -9,7 +9,7 @@ function OrdersTable({ updater, orders }) {
 	return (
 		<div>
 			{allOrders.map((order) => (
-				<Order order={order} updater={updater} key={order._id} />
+				<Order order={order} key={order._id} />
 			))}
 		</div>
 	);

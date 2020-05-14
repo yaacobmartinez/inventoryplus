@@ -1,6 +1,7 @@
 import React from "react";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
 import Customer from "./Customer";
+import useSWR from "swr";
 const useStyles = makeStyles((theme) => ({
 	item: {
 		textAlign: "center",
@@ -13,15 +14,16 @@ const useStyles = makeStyles((theme) => ({
 		color: theme.palette.text.primary,
 	},
 }));
-function CustomerList({ customers, updater }) {
+function CustomerList() {
 	const classes = useStyles();
+	const { data: customers } = useSWR("/customers");
 	return (
 		<div>
 			<Grid container alignItems='center' spacing={2}>
 				{customers ? (
-					customers.map((customer) => (
+					customers?.map((customer) => (
 						<Grid item xs={12} sm={4} md={2} key={customer.id}>
-							<Customer customer={customer} updater={updater} />
+							<Customer customer={customer} key={customer.id} />
 						</Grid>
 					))
 				) : (

@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
 		marginRight: theme.spacing(2),
 	},
 }));
-function AllOrders({ customers, products, orders, updater }) {
+function AllOrders() {
 	const classes = useStyles();
 	const [value, setValue] = useState(0);
 	const handleChange = (event, newValue) => {
@@ -39,24 +39,6 @@ function AllOrders({ customers, products, orders, updater }) {
 	const [newOrder, setNewOrder] = useState(false);
 	const toggleNewOrder = () => {
 		setNewOrder(!newOrder);
-	};
-
-	const confirmed = orders.filter((order) => {
-		return order.items[0].status === "Confirmed";
-	});
-	const reserved = orders.filter((order) => {
-		return order.items[0].status === "Reserved";
-	});
-	const shipping = orders.filter((order) => {
-		return order.items[0].status === "ToShip";
-	});
-	const fulfilled = orders.filter((order) => {
-		return order.items[0].status === "Fulfilled";
-	});
-
-	const tabPanelProps = {
-		toggleNewOrder: toggleNewOrder,
-		updater: updater,
 	};
 
 	return (
@@ -114,29 +96,21 @@ function AllOrders({ customers, products, orders, updater }) {
 					/>
 				</Tabs>
 				<TabPanel value={value} index={0}>
-					<OrderTabPanel orders={orders} {...tabPanelProps} />
+					<OrderTabPanel toggleNewOrder={toggleNewOrder} />
 				</TabPanel>
 				<TabPanel value={value} index={1}>
-					<OrderTabPanel orders={reserved} {...tabPanelProps} />
+					<OrderTabPanel filter='Reserved' toggleNewOrder={toggleNewOrder} />
 				</TabPanel>
 				<TabPanel value={value} index={2}>
-					<OrderTabPanel orders={confirmed} {...tabPanelProps} />
+					<OrderTabPanel filter='Confirmed' toggleNewOrder={toggleNewOrder} />
 				</TabPanel>
 				<TabPanel value={value} index={3}>
-					<OrderTabPanel orders={shipping} {...tabPanelProps} />
+					<OrderTabPanel filter='ToShip' toggleNewOrder={toggleNewOrder} />
 				</TabPanel>
 				<TabPanel value={value} index={4}>
-					<OrderTabPanel orders={fulfilled} {...tabPanelProps} />
+					<OrderTabPanel filter='Fulfilled' toggleNewOrder={toggleNewOrder} />
 				</TabPanel>
-				{customers && products ? (
-					<NewOrder
-						state={newOrder}
-						handleClose={toggleNewOrder}
-						updater={updater}
-						customers={customers}
-						products={products}
-					/>
-				) : null}
+				<NewOrder state={newOrder} handleClose={toggleNewOrder} />
 			</div>
 		</Slide>
 	);

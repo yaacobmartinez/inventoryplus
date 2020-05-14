@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	Drawer,
 	List,
@@ -8,15 +7,17 @@ import {
 	Tooltip,
 } from "@material-ui/core";
 import {
-	HomeTwoTone,
-	BookTwoTone,
-	AllInboxTwoTone,
 	AccountCircleTwoTone,
+	AllInboxTwoTone,
+	BookTwoTone,
+	HomeTwoTone,
 } from "@material-ui/icons";
+import React from "react";
+import AllOrders from "./Orders/AllOrders";
+import Customers from "./Customers/Customers";
 import Landing from "./Landing";
-import AllOrders from "./AllOrders";
-import Products from "./Products";
-import Customers from "./Customers";
+import Products from "./Products/Products";
+
 const useStyles = makeStyles((theme) => ({
 	drawer: {
 		"& .MuiDrawer-paper": {
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
 		margin: theme.spacing(2, 0),
 	},
 }));
-function CustomDrawer({ handleChange, products, customers, orders, updater }) {
+function CustomDrawer({ handleChange }) {
 	const classes = useStyles();
 	let menuItems = [
 		{
@@ -43,32 +44,17 @@ function CustomDrawer({ handleChange, products, customers, orders, updater }) {
 		{
 			name: "Orders",
 			icon: <AllInboxTwoTone />,
-			component: (
-				<AllOrders
-					products={products}
-					customers={customers}
-					orders={orders}
-					updater={updater}
-				/>
-			),
+			component: <AllOrders />,
 		},
 		{
 			name: "Products",
 			icon: <BookTwoTone />,
-			component: (
-				<Products products={products} customers={customers} updater={updater} />
-			),
+			component: <Products />,
 		},
 		{
 			name: "Customers",
 			icon: <AccountCircleTwoTone />,
-			component: (
-				<Customers
-					products={products}
-					customers={customers}
-					updater={updater}
-				/>
-			),
+			component: <Customers />,
 		},
 	];
 	const handleClick = (component) => (e) => {

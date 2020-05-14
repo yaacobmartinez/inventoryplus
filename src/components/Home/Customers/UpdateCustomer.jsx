@@ -9,12 +9,11 @@ import {
 	Divider,
 	Grid,
 	Button,
-	Backdrop,
-	CircularProgress,
 	TextField,
 } from "@material-ui/core";
 import { Close } from "@material-ui/icons";
 import Axios from "axios";
+import useSWR, { mutate, trigger } from "swr";
 
 const useStyles = makeStyles((theme) => ({
 	modalTitle: {
@@ -43,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 function UpdateCustomer({ customer, state, toggleState, updater }) {
 	const classes = useStyles();
-	const [backdrop, setBackdrop] = useState(false);
+	const { data } = useSWR("/customers");
 	const [values, setValues] = useState(customer);
 	const handleChange = (e) => {
 		setValues({ ...values, [e.target.name]: e.target.value });
@@ -53,37 +52,25 @@ function UpdateCustomer({ customer, state, toggleState, updater }) {
 		if (!values.name) {
 			return;
 		}
-		setBackdrop(true);
 		const jwt = localStorage.getItem("jwt");
+		const headers = { Authorization: `Bearer ${jwt}` };
 		const updateCustomer = async () => {
-			await Axios({
-				method: "PUT",
-				url: `customers/${values.id}`,
-				data: values,
-				headers: {
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			})
-				.then((res) => {
-					updater();
-					setBackdrop(false);
-				})
-				.catch((err) => {
-					console.log(err);
-					setBackdrop(false);
-				});
+			mutate(
+				"/customers",
+				data.filter((c) => c.id !== values.id),
+				false
+			);
+			mutate("/customers", [...data, values], false);
+
+			await Axios.put(`customers/${values.id}`, values, { headers });
+
+			trigger("/customers");
 		};
 		updateCustomer();
 		toggleState();
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Drawer anchor='right' open={state} onClose={toggleState}>
 				<AppBar
 					position='static'

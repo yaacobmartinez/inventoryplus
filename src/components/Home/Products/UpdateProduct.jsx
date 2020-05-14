@@ -1,20 +1,19 @@
-import React, { useState } from "react";
 import {
-	Drawer,
 	AppBar,
+	Button,
+	Divider,
+	Drawer,
+	Grid,
+	IconButton,
+	InputBase,
+	makeStyles,
 	Toolbar,
 	Typography,
-	makeStyles,
-	IconButton,
-	Divider,
-	Grid,
-	InputBase,
-	Button,
-	Backdrop,
-	CircularProgress,
 } from "@material-ui/core";
 import { Close } from "@material-ui/icons";
 import Axios from "axios";
+import React, { useState } from "react";
+import useSWR, { mutate, trigger } from "swr";
 
 const useStyles = makeStyles((theme) => ({
 	modalTitle: {
@@ -33,17 +32,13 @@ const useStyles = makeStyles((theme) => ({
 		fontSize: 30,
 		fontWeight: 500,
 	},
-	backdrop: {
-		zIndex: theme.zIndex.drawer + 1,
-		color: "#fff",
-	},
 	btn: {
 		borderRadius: 100,
 	},
 }));
 function UpdateProduct({ item, state, toggleState, updater }) {
 	const classes = useStyles();
-	const [backdrop, setBackdrop] = useState(false);
+	const { data } = useSWR("/products");
 	const [values, setValues] = useState(item);
 	const handleChange = (e) => {
 		setValues({ ...values, [e.target.name]: e.target.value });
@@ -63,37 +58,18 @@ function UpdateProduct({ item, state, toggleState, updater }) {
 	};
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setBackdrop(true);
 		const jwt = localStorage.getItem("jwt");
+		const headers = { Authorization: `Bearer ${jwt}` };
 		const updateProduct = async () => {
-			await Axios({
-				method: "PUT",
-				url: `products/${values.id}`,
-				data: values,
-				headers: {
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			})
-				.then((res) => {
-					updater();
-					setBackdrop(false);
-				})
-				.catch((err) => {
-					console.log(err);
-					setBackdrop(false);
-				});
+			mutate("/products", [...data, values], false);
+			await Axios.put(`products/${values.id}`, values, { headers });
+			trigger("/products");
 		};
 		updateProduct();
 		toggleState();
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Drawer anchor='right' open={state} onClose={toggleState}>
 				<AppBar
 					position='static'
@@ -127,6 +103,7 @@ function UpdateProduct({ item, state, toggleState, updater }) {
 								</Grid>
 								<Grid item xs={12} sm={6}>
 									<InputBase
+										type='number'
 										name='stock'
 										onChange={handleChange}
 										className={classes.item}

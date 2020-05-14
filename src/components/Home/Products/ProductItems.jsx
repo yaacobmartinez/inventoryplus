@@ -1,6 +1,7 @@
 import React from "react";
 import { makeStyles, Grid, CircularProgress } from "@material-ui/core";
 import ProductItem from "./ProductItem";
+import useSWR from "swr";
 const useStyles = makeStyles((theme) => ({
 	item: {
 		borderRadius: 10,
@@ -22,8 +23,10 @@ const useStyles = makeStyles((theme) => ({
 		color: theme.palette.text.primary,
 	},
 }));
-const ProductItems = ({ products, updater }) => {
+const ProductItems = ({ updater }) => {
 	const classes = useStyles();
+	const { data } = useSWR("/products");
+	const products = data;
 	return (
 		<div>
 			<Grid container alignItems='center' spacing={2}>

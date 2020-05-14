@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 		textTransform: "none",
 	},
 }));
-function Customers({ customers, updater }) {
+function Customers() {
 	const classes = useStyles();
 	const [newCustomer, setNewCustomer] = useState(false);
 	const toggleNewCustomer = () => {
@@ -48,13 +48,9 @@ function Customers({ customers, updater }) {
 							New Customer
 						</Button>
 					</Toolbar>
-					<CustomerList customers={customers} updater={updater} />
+					<CustomerList />
 				</Paper>
-				<NewCustomer
-					state={newCustomer}
-					handleClose={toggleNewCustomer}
-					updater={updater}
-				/>
+				<NewCustomer state={newCustomer} handleClose={toggleNewCustomer} />
 			</div>
 		</Slide>
 	);

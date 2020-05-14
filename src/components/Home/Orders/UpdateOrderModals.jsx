@@ -1,23 +1,22 @@
-import React, { useState } from "react";
 import {
-	Slide,
+	Button,
 	Dialog,
-	DialogTitle,
+	DialogActions,
 	DialogContent,
 	DialogContentText,
-	DialogActions,
-	Button,
-	makeStyles,
-	TextField,
+	DialogTitle,
 	FormControl,
 	InputLabel,
-	Select,
+	makeStyles,
 	MenuItem,
-	Backdrop,
-	CircularProgress,
+	Select,
+	Slide,
+	TextField,
 } from "@material-ui/core";
+import { ArrowBack, ArrowForward } from "@material-ui/icons";
 import Axios from "axios";
-import { ArrowForward, ArrowBack } from "@material-ui/icons";
+import React, { useState } from "react";
+import useSWR, { mutate, trigger } from "swr";
 
 const useStyles = makeStyles((theme) => ({
 	btn: {
@@ -27,77 +26,45 @@ const useStyles = makeStyles((theme) => ({
 	formField: {
 		margin: theme.spacing(2, 0, 2, 0),
 	},
-	backdrop: {
-		zIndex: theme.zIndex.drawer + 1,
-		color: "#fff",
-	},
 }));
 const Transition = React.forwardRef(function Transition(props, ref) {
 	return <Slide direction='up' ref={ref} {...props} />;
 });
 
-export const DeleteOrderModal = ({
-	state,
-	toggler,
-	order,
-	disabler,
-	updater,
-}) => {
+const jwt = localStorage.getItem("jwt");
+const headers = {
+	"content-type": "application/json ",
+	Authorization: `Bearer ${jwt}`,
+};
+
+export const DeleteOrderModal = ({ state, toggler, order }) => {
 	const classes = useStyles();
-	const [backdrop, setBackdrop] = useState(false);
+	const { data } = useSWR("/orders");
 	const [product, setProduct] = useState(order.items[0].product);
 	const handleChange = () => {
 		setProduct({ ...product, stock: product.stock + order.items[0].quantity });
 	};
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setBackdrop(true);
-		const jwt = localStorage.getItem("jwt");
-		const updateProduct = async () => {
-			await Axios({
-				method: "PUT",
-				url: `products/${product.id}`,
-				data: product,
-				headers: {
-					"content-type": "application/json ",
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			});
-		};
+
 		const cancelOrder = async () => {
-			await Axios({
-				method: "DELETE",
-				url: `orders/${order.id}`,
-				headers: {
-					"content-type": "application/json ",
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			})
-				.then((res) => {
-					disabler();
-					updater();
-					setBackdrop(false);
-				})
-				.catch((err) => {
-					console.log(err);
-					setBackdrop(false);
-				});
+			mutate(
+				"/orders",
+				data.filter((o) => o.id !== order.id),
+				false
+			);
+			await Axios.all([
+				Axios.put(`products/${product.id}`, product, { headers }),
+				Axios.delete(`orders/${order.id}`, { headers }),
+			]);
+			trigger("/orders");
+			trigger("/products");
 		};
-		updateProduct();
 		cancelOrder();
 		toggler();
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Dialog
 				open={state}
 				TransitionComponent={Transition}
@@ -137,15 +104,8 @@ export const DeleteOrderModal = ({
 	);
 };
 
-export const UpdateOrderModal = ({
-	state,
-	toggler,
-	order,
-	updater,
-	orderUpdater,
-}) => {
+export const UpdateOrderModal = ({ state, toggler, order }) => {
 	const classes = useStyles();
-	const [backdrop, setBackdrop] = useState(false);
 	const [originalOrder, setOriginalOrder] = useState(order);
 	const [updatedOrder, setUpdatedOrder] = useState(order.items[0]);
 	const handleStatusChange = (e) => {
@@ -173,58 +133,34 @@ export const UpdateOrderModal = ({
 			setOriginalOrder({ ...originalOrder, items: [updatedOrder] });
 		}
 	};
+	const { data } = useSWR("/orders");
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setBackdrop(true);
 		if (!error) {
-			const jwt = localStorage.getItem("jwt");
-			const updateStock = async () => {
-				await Axios({
-					method: "PUT",
-					url: `products/${updatedOrder.product.id}`,
-					data: updatedOrder.product,
-					headers: {
-						"content-type": "application/json ",
-						Authorization: `Bearer ${jwt}`,
-					},
-					validateStatus: (status) => {
-						return true;
-					},
-				});
-			};
 			const updateOrder = async () => {
-				await Axios({
-					method: "PUT",
-					url: `orders/${originalOrder.id}`,
-					data: originalOrder,
-					headers: {
-						"content-type": "application/json ",
-						Authorization: `Bearer ${jwt}`,
-					},
-					validateStatus: (status) => {
-						return true;
-					},
-				})
-					.then((res) => {
-						orderUpdater(originalOrder);
-						updater();
-						setBackdrop(false);
-					})
-					.catch((err) => {
-						console.log(err);
-						setBackdrop(false);
-					});
+				mutate(
+					"/orders",
+					data.filter((o) => o.id !== originalOrder.id)
+				);
+				mutate("/orders", [...data, originalOrder], false);
+				await Axios.all([
+					Axios.put(
+						`products/${updatedOrder.product.id}`,
+						updatedOrder.product,
+						{ headers }
+					),
+					Axios.put(`orders/${originalOrder.id}`, originalOrder, { headers }),
+				]);
+				trigger("/orders");
+				trigger("/products");
+				
 			};
-			updateStock();
 			updateOrder();
 			toggler();
 		}
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Dialog
 				fullWidth
 				maxWidth='sm'

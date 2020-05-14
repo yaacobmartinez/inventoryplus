@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
 		background: theme.palette.background.default,
 	},
 }));
-function Products({ products, updater }) {
+function Products({ updater }) {
 	const classes = useStyles();
 	const [newProduct, setNewProduct] = useState(false);
 	const toggleNewProduct = () => {
@@ -54,7 +54,7 @@ function Products({ products, updater }) {
 							New Product
 						</Button>
 					</Toolbar>
-					<ProductItems products={products} updater={updater} />
+					<ProductItems updater={updater} />
 				</Paper>
 				<NewProduct
 					state={newProduct}

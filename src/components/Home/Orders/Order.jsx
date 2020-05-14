@@ -58,15 +58,11 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-function Order({ order, updater }) {
+function Order({ order }) {
 	const classes = useStyles();
-	const [currentOrder, setCurrentOrder] = useState(order);
 	const [modal, setModal] = useState(false);
 	const toggleModal = () => {
 		setModal(!modal);
-	};
-	const orderUpdater = (order) => {
-		setCurrentOrder(order);
 	};
 	const [updateModal, setUpdateModal] = useState(false);
 	const toggleUpdateModal = () => {
@@ -81,26 +77,21 @@ function Order({ order, updater }) {
 		};
 		return newDate.toLocaleDateString("en-US", options);
 	};
-	const [disable, setDisabled] = useState(false);
-	const disabler = () => {
-		setDisabled(true);
-	};
 
 	return (
 		<div>
-			<ExpansionPanel hidden={disable} elevation={0} className={classes.panel}>
+			<ExpansionPanel elevation={0} className={classes.panel}>
 				<ExpansionPanelSummary
 					className={classes.panelSummary}
 					expandIcon={<ExpandMoreRounded />}>
 					<div className={classes.column}>
 						<Typography className={classes.primaryText}>
-							{currentOrder.items[0].product.product_name} (
-							{currentOrder.items[0].quantity})
+							{order.items[0].product.product_name} ({order.items[0].quantity})
 						</Typography>
 					</div>
 					<div className={classes.column}>
 						<Typography className={classes.secondaryText}>
-							{currentOrder.customer.name}
+							{order.customer.name}
 						</Typography>
 					</div>
 					<div className={classes.column}>
@@ -108,7 +99,7 @@ function Order({ order, updater }) {
 							size='small'
 							color='primary'
 							icon={<FiberSmartRecordRounded />}
-							label={currentOrder.items[0].status}
+							label={order.items[0].status}
 						/>
 					</div>
 				</ExpansionPanelSummary>
@@ -116,22 +107,22 @@ function Order({ order, updater }) {
 					<div className={classes.column}>
 						<Typography style={{ fontSize: 13 }}>Ship to : </Typography>
 						<Typography style={{ fontSize: 15, fontWeight: 600 }}>
-							{currentOrder.customer.address}
+							{order.customer.address}
 						</Typography>
 					</div>
 					<div className={classes.column}>
 						<Typography style={{ fontSize: 13 }}>Per Item Cost </Typography>
 						<Typography style={{ fontSize: 15, fontWeight: 600 }}>
-							({currentOrder.items[0].quantity}) x
-							{parseInt(currentOrder.items[0].product.final_price).toFixed(2)}
+							({order.items[0].quantity}) x
+							{parseInt(order.items[0].product.final_price).toFixed(2)}
 						</Typography>
 					</div>
 					<div className={classes.column}>
 						<Typography style={{ fontSize: 13 }}>Total Order Cost </Typography>
 						<Typography style={{ fontSize: 15, fontWeight: 600 }}>
 							{(
-								parseInt(currentOrder.items[0].quantity) *
-								parseInt(currentOrder.items[0].product.final_price)
+								parseInt(order.items[0].quantity) *
+								parseInt(order.items[0].product.final_price)
 							).toFixed(2)}
 						</Typography>
 					</div>
@@ -140,15 +131,15 @@ function Order({ order, updater }) {
 					<div className={classes.column}>
 						<Typography style={{ fontSize: 13 }}>Date Ordered: </Typography>
 						<Typography style={{ fontSize: 15, fontWeight: 600 }}>
-							{toDate(currentOrder.createdAt)}
+							{toDate(order.createdAt)}
 						</Typography>
 					</div>
 					<div className={classes.column}>
 						<Typography style={{ fontSize: 13 }}>Capital </Typography>
 						<Typography style={{ fontSize: 15, fontWeight: 600 }}>
 							{(
-								parseInt(currentOrder.items[0].quantity) *
-								parseInt(currentOrder.items[0].product.original_price)
+								parseInt(order.items[0].quantity) *
+								parseInt(order.items[0].product.original_price)
 							).toFixed(2)}
 						</Typography>
 					</div>
@@ -156,13 +147,13 @@ function Order({ order, updater }) {
 						<Typography style={{ fontSize: 13 }}>Expected Profit </Typography>
 						<Typography style={{ fontSize: 15, fontWeight: 600 }}>
 							{(
-								parseInt(currentOrder.items[0].quantity) *
-								parseInt(currentOrder.items[0].product.markup)
+								parseInt(order.items[0].quantity) *
+								parseInt(order.items[0].product.markup)
 							).toFixed(2)}
 						</Typography>
 					</div>
 				</ExpansionPanelDetails>
-				{currentOrder.items[0].status !== "Fulfilled" && (
+				{order.items[0].status !== "Fulfilled" && (
 					<ExpansionPanelActions>
 						<Button
 							size='small'
@@ -187,19 +178,11 @@ function Order({ order, updater }) {
 				)}
 			</ExpansionPanel>
 
-			<DeleteOrderModal
-				state={modal}
-				toggler={toggleModal}
-				order={currentOrder}
-				disabler={disabler}
-				updater={updater}
-			/>
+			<DeleteOrderModal state={modal} toggler={toggleModal} order={order} />
 			<UpdateOrderModal
 				state={updateModal}
 				toggler={toggleUpdateModal}
-				order={currentOrder}
-				updater={updater}
-				orderUpdater={orderUpdater}
+				order={order}
 			/>
 		</div>
 	);

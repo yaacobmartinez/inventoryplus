@@ -6,8 +6,15 @@ import { ThemeProvider, createMuiTheme } from "@material-ui/core";
 import { AuthContextProvider } from "./components/contexts/AuthContext";
 import Home from "./components/Home";
 import axios from "axios";
-axios.defaults.baseURL = "https://api-iplus.herokuapp.com/";
+import { SWRConfig } from "swr";
+axios.defaults.baseURL = "http://localhost:1337/" || `${process.env.API_URL}`;
 
+const jwt = localStorage.getItem("jwt");
+const options = {
+	headers: {
+		Authorization: `Bearer ${jwt}`,
+	},
+};
 const theme = createMuiTheme({
 	typography: {
 		fontFamily: "Poppins, sans-serif",
@@ -29,7 +36,13 @@ function App() {
 					<AuthContextProvider>
 						<Switch>
 							<Route exact path='/login' component={Login} />
-							<ProtectedRoute exact path='/' component={Home} />
+							<SWRConfig
+								value={{
+									dedupingInterval: 10000,
+									fetcher: (url) => axios(url, options).then((r) => r.data),
+								}}>
+								<ProtectedRoute exact path='/' component={Home} />
+							</SWRConfig>
 						</Switch>
 					</AuthContextProvider>
 				</Router>

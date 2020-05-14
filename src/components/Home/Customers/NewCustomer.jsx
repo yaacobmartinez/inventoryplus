@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Close } from "@material-ui/icons";
 import {
 	makeStyles,
-	Backdrop,
-	CircularProgress,
 	Drawer,
 	AppBar,
 	Toolbar,
@@ -15,6 +13,7 @@ import {
 	Button,
 } from "@material-ui/core";
 import Axios from "axios";
+import useSWR, { mutate, trigger } from "swr";
 const useStyles = makeStyles((theme) => ({
 	root: {
 		"& .MuiCardActions-root": {
@@ -44,11 +43,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 function NewCustomer({ state, handleClose, updater }) {
 	const classes = useStyles();
-	const [backdrop, setBackdrop] = useState(false);
 	const initialValues = {
 		name: "",
 		address: "",
 	};
+	const { data } = useSWR("/customers");
 	const errorInitial = {};
 	const [values, setValues] = useState(initialValues);
 	const [error, setError] = useState(errorInitial);
@@ -57,7 +56,6 @@ function NewCustomer({ state, handleClose, updater }) {
 	};
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setBackdrop(true);
 		setError(errorInitial);
 		const name = !values.name ? true : false;
 		const address = !values.address ? true : false;
@@ -65,32 +63,11 @@ function NewCustomer({ state, handleClose, updater }) {
 		const hasError = name || address ? true : false;
 		if (!hasError) {
 			const jwt = localStorage.getItem("jwt");
+			const headers = { Authorization: `Bearer ${jwt}` };
 			const addCustomer = async () => {
-				await Axios({
-					method: "POST",
-					url: "customers",
-					data: values,
-					headers: {
-						Authorization: `Bearer ${jwt}`,
-					},
-					validateStatus: (status) => {
-						return true;
-					},
-				})
-					.then((res) => {
-						if (res.status === 403) {
-							localStorage.clear();
-							window.location.reload();
-							setBackdrop(false);
-							return;
-						}
-						updater();
-						setBackdrop(false);
-					})
-					.catch((err) => {
-						console.log(err);
-						setBackdrop(false);
-					});
+				mutate("/customers", [...data, values], false);
+				await Axios.post("customers", values, { headers });
+				trigger("/customers");
 			};
 			addCustomer();
 			handleClose();
@@ -98,9 +75,6 @@ function NewCustomer({ state, handleClose, updater }) {
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Drawer
 				className={classes.root}
 				anchor='right'

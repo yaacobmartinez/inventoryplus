@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { makeStyles, Typography, Slide } from "@material-ui/core";
-import Axios from "axios";
+import useSWR from "swr";
 const useStyles = makeStyles((theme) => ({
 	root: {
 		margin: theme.spacing(8, 2, 0, 10),
@@ -8,35 +8,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 function Landing({ handleChanger }) {
 	const classes = useStyles();
-	const [profile, setProfile] = useState();
-	useEffect(() => {
-		let source = Axios.CancelToken.source();
-		const jwt = localStorage.getItem("jwt");
-		const getProfile = async () => {
-			await Axios({
-				method: "GET",
-				url: "users/me",
-				headers: {
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-				cancelToken: source.token,
-			})
-				.then((res) => {
-					setProfile(res.data);
-				})
-				.catch((err) => {
-					// console.log(err);
-				});
-		};
-		getProfile();
-
-		return () => {
-			source.cancel();
-		};
-	}, []);
+	const { data: profile } = useSWR("/users/me");
 	return (
 		<Slide in={true}>
 			<div className={classes.root}>

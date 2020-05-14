@@ -20,8 +20,6 @@ import {
 	Select,
 	MenuItem,
 	FormHelperText,
-	Backdrop,
-	CircularProgress,
 } from "@material-ui/core";
 // import Axios from "axios";
 import { Close } from "@material-ui/icons";
@@ -29,6 +27,7 @@ import Autocomplete, {
 	createFilterOptions,
 } from "@material-ui/lab/Autocomplete";
 import Axios from "axios";
+import useSWR, { mutate, trigger } from "swr";
 const filter = createFilterOptions();
 
 const useStyles = makeStyles((theme) => ({
@@ -49,7 +48,10 @@ const useStyles = makeStyles((theme) => ({
 		color: "#fff",
 	},
 }));
-function NewOrder({ state, handleClose, updater, customers, products }) {
+function NewOrder({ state, handleClose }) {
+	const { data: products } = useSWR("/products");
+	const { data: customers } = useSWR("/customers");
+	const { data: orders } = useSWR("/orders");
 	const classes = useStyles();
 	const [order, setOrder] = useState({});
 	const [error, setError] = useState({
@@ -58,7 +60,11 @@ function NewOrder({ state, handleClose, updater, customers, products }) {
 		quantity: false,
 		status: false,
 	});
-	const [backdrop, setBackdrop] = useState(false);
+	const jwt = localStorage.getItem("jwt");
+	const headers = {
+		"Content-Type": "application/json;charset=UTF-8",
+		Authorization: `Bearer ${jwt}`,
+	};
 	const [item, setItem] = useState([]);
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -78,41 +84,15 @@ function NewOrder({ state, handleClose, updater, customers, products }) {
 		const hasError =
 			customer || product || quantity || status || insufficient ? true : false;
 		if (!hasError) {
-			setBackdrop(true);
-			const jwt = localStorage.getItem("jwt");
-			const updateStocks = async () => {
-				await Axios({
-					method: "PUT",
-					url: `products/${item.product._id}`,
-					data: JSON.stringify({ stock: remainingStock }),
-					headers: {
-						"content-type": "application/json ",
-						Authorization: `Bearer ${jwt}`,
-					},
-					validateStatus: (status) => {
-						return true;
-					},
-				}).then((res) => {
-					setBackdrop(false);
-					updater();
-				});
-			};
 			const insertOrder = async () => {
-				await Axios({
-					method: "POST",
-					url: "orders",
-					data: order,
-					headers: {
-						Authorization: `Bearer ${jwt}`,
-					},
-					validateStatus: (status) => {
-						return true;
-					},
-				}).then((res) => {
-					updateStocks();
-					setCustomer({});
-					setItem({});
-				});
+				const pushStock = JSON.stringify({ stock: remainingStock });
+				mutate("/orders", [...orders, order], false);
+				await Axios.all([
+					Axios.put(`products/${item.product._id}`, pushStock, { headers }),
+					Axios.post("orders", order, { headers }),
+				]);
+				trigger("/orders");
+				trigger("/products");
 			};
 
 			insertOrder();
@@ -134,34 +114,16 @@ function NewOrder({ state, handleClose, updater, customers, products }) {
 	const handleNewCustomerSubmit = (e) => {
 		e.preventDefault();
 		toggleOpen(false);
-		const jwt = localStorage.getItem("jwt");
 		const insertCustomer = async () => {
-			await Axios({
-				method: "POST",
-				url: "customers",
-				data: newCustomer,
-				headers: {
-					Authorization: `Bearer ${jwt}`,
-				},
-				validateStatus: (status) => {
-					return true;
-				},
-			})
-				.then((res) => {
-					setCustomer(res.data);
-					setOrder({ ...order, customer: res.data });
-				})
-				.catch((err) => {
-					console.log(err);
-				});
+			await Axios.post("customers", newCustomer, { headers }).then((r) => {
+				setCustomer(r.data);
+				setOrder({ ...order, customer: r.data });
+			});
 		};
 		insertCustomer();
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Drawer anchor='right' open={state} onClose={handleClose}>
 				<AppBar
 					position='static'

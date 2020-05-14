@@ -10,11 +10,10 @@ import {
 	Divider,
 	Grid,
 	TextField,
-	Backdrop,
-	CircularProgress,
 } from "@material-ui/core";
 import { Close } from "@material-ui/icons";
 import Axios from "axios";
+import useSWR, { mutate, trigger } from "swr";
 const useStyles = makeStyles((theme) => ({
 	root: {
 		"& .MuiCardActions-root": {
@@ -44,7 +43,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 function NewProduct({ state, handleClose, updater }) {
 	const classes = useStyles();
-	const [backdrop, setBackdrop] = useState(false);
 	const initialValues = {
 		product_name: "",
 		stock: "",
@@ -53,6 +51,7 @@ function NewProduct({ state, handleClose, updater }) {
 		markup: "",
 		final_price: "",
 	};
+	const { data } = useSWR("/products");
 	const errorInitial = {};
 	const [values, setValues] = useState(initialValues);
 	const [error, setError] = useState(errorInitial);
@@ -61,7 +60,6 @@ function NewProduct({ state, handleClose, updater }) {
 	};
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		setBackdrop(true);
 		setError(errorInitial);
 		const product_name = !values.product_name ? true : false;
 		const stock = !values.stock ? true : false;
@@ -73,32 +71,11 @@ function NewProduct({ state, handleClose, updater }) {
 		if (!hasError) {
 			// insert logic
 			const jwt = localStorage.getItem("jwt");
+			const headers = { Authorization: `Bearer ${jwt}` };
 			const addProduct = async () => {
-				await Axios({
-					method: "POST",
-					url: "products",
-					data: values,
-					headers: {
-						Authorization: `Bearer ${jwt}`,
-					},
-					validateStatus: (status) => {
-						return true;
-					},
-				})
-					.then((res) => {
-						if (res.status === 403) {
-							localStorage.clear();
-							window.location.reload();
-							setBackdrop(false);
-							return;
-						}
-						updater();
-						setBackdrop(false);
-					})
-					.catch((err) => {
-						console.log(err);
-						setBackdrop(false);
-					});
+				mutate("/products", [...data, values], false);
+				await Axios.post("products", values, { headers });
+				trigger("/products");
 			};
 			addProduct();
 			handleClose();
@@ -113,9 +90,6 @@ function NewProduct({ state, handleClose, updater }) {
 	};
 	return (
 		<div>
-			<Backdrop className={classes.backdrop} open={backdrop}>
-				<CircularProgress color='inherit' />
-			</Backdrop>
 			<Drawer
 				className={classes.root}
 				anchor='right'
