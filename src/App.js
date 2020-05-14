@@ -7,7 +7,7 @@ import { AuthContextProvider } from "./components/contexts/AuthContext";
 import Home from "./components/Home";
 import axios from "axios";
 import { SWRConfig } from "swr";
-axios.defaults.baseURL = "http://localhost:1337/" || `${process.env.API_URL}`;
+axios.defaults.baseURL = "https://api-iplus.herokuapp.com/";
 
 const jwt = localStorage.getItem("jwt");
 const options = {
